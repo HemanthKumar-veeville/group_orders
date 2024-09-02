@@ -112,61 +112,63 @@ const OrderForm = ({ dealId }) => {
           future payments.
         </div>
       )}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label
-            htmlFor="amount"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Amount
-          </label>
-          <input
-            type="number"
-            id="amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-custom-accent focus:border-custom-accent"
-            min="0"
-            step="0.01"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label
-            htmlFor="card-element"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Credit or Debit Card
-          </label>
-          <div className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-white">
-            <CardElement
-              id="card-element"
-              options={{
-                style: {
-                  base: {
-                    fontSize: "16px",
-                    color: "#424770",
-                    "::placeholder": {
-                      color: "#aab7c4",
-                    },
-                  },
-                  invalid: {
-                    color: "#9e2146",
-                  },
-                },
-              }}
+      {!success && (
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label
+              htmlFor="amount"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Amount
+            </label>
+            <input
+              type="number"
+              id="amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-custom-accent focus:border-custom-accent"
+              min="0"
+              step="0.01"
+              required
             />
           </div>
-        </div>
-        {error && <div className="text-red-600 mb-4">{error}</div>}
-        <button
-          type="submit"
-          className="bg-custom-accent text-white px-6 py-2 rounded-full shadow-md hover:bg-custom-accent-dark transition duration-300"
-          disabled={isProcessing || !stripe}
-        >
-          {isProcessing ? "Processing..." : "Place Order"}
-        </button>
-      </form>
+          <div className="mb-4">
+            <label
+              htmlFor="card-element"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Credit or Debit Card
+            </label>
+            <div className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-white">
+              <CardElement
+                id="card-element"
+                options={{
+                  style: {
+                    base: {
+                      fontSize: "16px",
+                      color: "#424770",
+                      "::placeholder": {
+                        color: "#aab7c4",
+                      },
+                    },
+                    invalid: {
+                      color: "#9e2146",
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+          {error && <div className="text-red-600 mb-4">{error}</div>}
+          <button
+            type="submit"
+            className="bg-custom-accent text-white px-6 py-2 rounded-full shadow-md hover:bg-custom-accent-dark transition duration-300"
+            disabled={isProcessing || !stripe}
+          >
+            {isProcessing ? "Processing..." : "Place Order"}
+          </button>
+        </form>
+      )}
     </div>
   );
 };
