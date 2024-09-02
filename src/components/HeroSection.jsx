@@ -1,6 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+  const handleSignUp = () => {
+    navigate("/register");
+  };
   return (
     <section className="bg-custom-accent text-white py-20">
       <div className="container mx-auto text-center">
@@ -9,12 +14,12 @@ const HeroSection = () => {
           The ultimate platform for group ordering. Simplify your group
           purchases with ease.
         </p>
-        <a
-          href="/register"
+        <div
+          onClick={handleSignUp}
           className="bg-white text-custom-accent px-8 py-3 rounded-full shadow-md hover:bg-gray-100 transition duration-300"
         >
           Get Started
-        </a>
+        </div>
       </div>
     </section>
   );

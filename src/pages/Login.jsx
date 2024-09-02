@@ -2,11 +2,18 @@ import React from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import LoginForm from "../components/LoginForm";
+import { useDispatch } from "react-redux";
+import { login } from "../features/auth/authSlice";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const handleLogin = (credentials) => {
     // Handle login process
     console.log("Login with credentials:", credentials);
+    dispatch(login(credentials));
+    navigate("/");
   };
 
   return (

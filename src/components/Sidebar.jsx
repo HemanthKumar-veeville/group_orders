@@ -8,7 +8,7 @@ const Sidebar = () => {
         <h2 className="text-2xl font-bold">Menu</h2>
         <ul className="mt-6">
           <li className="mb-4">
-            <Link to="/dashboard" className="hover:text-custom-accent">
+            <Link to="/" className="hover:text-custom-accent">
               Dashboard
             </Link>
           </li>

@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "../../utils/helperMethods";
 
 export const fetchUserProfile = createAsyncThunk(
   "user/fetchUserProfile",
   async () => {
-    const response = await axios.get("/api/users/profile");
+    const response = await axiosInstance.get("/users/profile");
     return response.data;
   }
 );
@@ -12,7 +12,7 @@ export const fetchUserProfile = createAsyncThunk(
 export const updateUserProfile = createAsyncThunk(
   "user/updateUserProfile",
   async (profileData) => {
-    const response = await axios.put("/api/users/profile", profileData);
+    const response = await axiosInstance.put("/users/profile", profileData);
     return response.data;
   }
 );
@@ -20,7 +20,7 @@ export const updateUserProfile = createAsyncThunk(
 export const deleteUserProfile = createAsyncThunk(
   "user/deleteUserProfile",
   async () => {
-    const response = await axios.delete("/api/users/profile");
+    const response = await axiosInstance.delete("/users/profile");
     return response.data;
   }
 );

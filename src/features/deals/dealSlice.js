@@ -1,15 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "../../utils/helperMethods";
 
 export const fetchDeals = createAsyncThunk("deals/fetchDeals", async () => {
-  const response = await axios.get("/api/deals");
+  const response = await axiosInstance.get("/deals");
   return response.data;
 });
 
 export const fetchDealDetails = createAsyncThunk(
   "deals/fetchDealDetails",
   async (dealId) => {
-    const response = await axios.get(`/api/deals/${dealId}`);
+    const response = await axiosInstance.get(`/deals/${dealId}`);
     return response.data;
   }
 );
@@ -17,7 +17,7 @@ export const fetchDealDetails = createAsyncThunk(
 export const createDeal = createAsyncThunk(
   "deals/createDeal",
   async (dealData) => {
-    const response = await axios.post("/api/deals", dealData);
+    const response = await axiosInstance.post("/deals", dealData);
     return response.data;
   }
 );
@@ -25,7 +25,7 @@ export const createDeal = createAsyncThunk(
 export const updateDeal = createAsyncThunk(
   "deals/updateDeal",
   async ({ dealId, dealData }) => {
-    const response = await axios.put(`/api/deals/${dealId}`, dealData);
+    const response = await axiosInstance.put(`/deals/${dealId}`, dealData);
     return response.data;
   }
 );
@@ -33,7 +33,7 @@ export const updateDeal = createAsyncThunk(
 export const deleteDeal = createAsyncThunk(
   "deals/deleteDeal",
   async (dealId) => {
-    await axios.delete(`/api/deals/${dealId}`);
+    await axiosInstance.delete(`/deals/${dealId}`);
     return dealId;
   }
 );
@@ -41,7 +41,7 @@ export const deleteDeal = createAsyncThunk(
 export const finalizeDeal = createAsyncThunk(
   "deals/finalizeDeal",
   async (dealId) => {
-    const response = await axios.post(`/api/deals/finalize/${dealId}`);
+    const response = await axiosInstance.post(`/deals/finalize/${dealId}`);
     return response.data;
   }
 );

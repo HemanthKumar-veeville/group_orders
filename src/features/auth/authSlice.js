@@ -1,25 +1,39 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "../../utils/helperMethods";
 
-export const login = createAsyncThunk("auth/login", async (credentials) => {
-  const response = await axios.post("/api/auth/login", credentials);
-  return response.data;
-});
+export const login = createAsyncThunk(
+  "auth/login",
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post("/auth/login", credentials);
+      const { token, user } = response.data;
+
+      // Store the token and user info in localStorage
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Return the user and token data to be used in Redux state
+      return { token, user };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
 
 export const register = createAsyncThunk("auth/register", async (userData) => {
-  const response = await axios.post("/api/auth/register", userData);
+  const response = await axiosInstance.post("/auth/register", userData);
   return response.data;
 });
 
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
-  await axios.post("/api/auth/logout");
+  await axiosInstance.post("/auth/logout");
   return null;
 });
 
 export const fetchUserProfile = createAsyncThunk(
   "auth/fetchUserProfile",
   async () => {
-    const response = await axios.get("/api/users/profile");
+    const response = await axiosInstance.get("/users/profile");
     return response.data;
   }
 );
@@ -27,7 +41,7 @@ export const fetchUserProfile = createAsyncThunk(
 export const updateUserProfile = createAsyncThunk(
   "auth/updateUserProfile",
   async (profileData) => {
-    const response = await axios.put("/api/users/profile", profileData);
+    const response = await axiosInstance.put("/users/profile", profileData);
     return response.data;
   }
 );
@@ -35,7 +49,10 @@ export const updateUserProfile = createAsyncThunk(
 export const changePassword = createAsyncThunk(
   "auth/changePassword",
   async (passwords) => {
-    const response = await axios.put("/api/users/change-password", passwords);
+    const response = await axiosInstance.put(
+      "/users/change-password",
+      passwords
+    );
     return response.data;
   }
 );
@@ -48,7 +65,12 @@ const authSlice = createSlice({
     status: "idle",
     error: null,
   },
-  reducers: {},
+  reducers: {
+    setUserDetails: (state, action) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(login.pending, (state) => {
@@ -75,7 +97,7 @@ const authSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message;
       })
-      .addCase(logout.fulfilled, (state) => {
+      .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.token = null;
         state.status = "idle";
@@ -93,3 +115,4 @@ const authSlice = createSlice({
 });
 
 export default authSlice.reducer;
+export const { setUserDetails } = authSlice.actions;

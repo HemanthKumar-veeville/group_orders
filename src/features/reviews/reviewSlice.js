@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "../../utils/helperMethods";
 
 export const fetchReviews = createAsyncThunk(
   "reviews/fetchReviews",
   async (dealId) => {
-    const response = await axios.get(`/api/deals/${dealId}/reviews`);
+    const response = await axiosInstance.get(`/deals/${dealId}/reviews`);
     return response.data;
   }
 );
@@ -12,7 +12,10 @@ export const fetchReviews = createAsyncThunk(
 export const submitReview = createAsyncThunk(
   "reviews/submitReview",
   async ({ dealId, review }) => {
-    const response = await axios.post(`/api/deals/${dealId}/reviews`, review);
+    const response = await axiosInstance.post(
+      `/deals/${dealId}/reviews`,
+      review
+    );
     return response.data;
   }
 );

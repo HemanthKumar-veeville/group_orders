@@ -1,10 +1,26 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "../../utils/helperMethods";
 
 export const fetchOrders = createAsyncThunk(
   "orders/fetchOrders",
   async (dealId) => {
-    const response = await axios.get(`/api/orders`, { params: { dealId } });
+    const response = await axiosInstance.get(`/orders?dealId=${dealId}`);
+    return response.data;
+  }
+);
+
+export const fetchMyOrders = createAsyncThunk(
+  "orders/fetchMyOrders",
+  async (dealId) => {
+    const response = await axiosInstance.get(`/orders/me`);
+    return response.data;
+  }
+);
+
+export const fetchAllOrders = createAsyncThunk(
+  "orders/fetchAllOrders",
+  async (dealId) => {
+    const response = await axiosInstance.get(`/orders/all`);
     return response.data;
   }
 );
@@ -12,7 +28,7 @@ export const fetchOrders = createAsyncThunk(
 export const fetchOrderDetails = createAsyncThunk(
   "orders/fetchOrderDetails",
   async (orderId) => {
-    const response = await axios.get(`/api/orders/${orderId}`);
+    const response = await axiosInstance.get(`/orders/${orderId}`);
     return response.data;
   }
 );
@@ -20,7 +36,7 @@ export const fetchOrderDetails = createAsyncThunk(
 export const createOrder = createAsyncThunk(
   "orders/createOrder",
   async (orderData) => {
-    const response = await axios.post("/api/orders", orderData);
+    const response = await axiosInstance.post("/orders", orderData);
     return response.data;
   }
 );
@@ -28,7 +44,7 @@ export const createOrder = createAsyncThunk(
 export const updateOrder = createAsyncThunk(
   "orders/updateOrder",
   async ({ orderId, orderData }) => {
-    const response = await axios.put(`/api/orders/${orderId}`, orderData);
+    const response = await axiosInstance.put(`/orders/${orderId}`, orderData);
     return response.data;
   }
 );
@@ -36,7 +52,7 @@ export const updateOrder = createAsyncThunk(
 export const deleteOrder = createAsyncThunk(
   "orders/deleteOrder",
   async (orderId) => {
-    await axios.delete(`/api/orders/${orderId}`);
+    await axiosInstance.delete(`/orders/${orderId}`);
     return orderId;
   }
 );
@@ -60,6 +76,28 @@ const orderSlice = createSlice({
         state.orders = action.payload;
       })
       .addCase(fetchOrders.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(fetchAllOrders.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchAllOrders.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.orders = action.payload;
+      })
+      .addCase(fetchAllOrders.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(fetchMyOrders.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchMyOrders.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.orders = action.payload;
+      })
+      .addCase(fetchMyOrders.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       })

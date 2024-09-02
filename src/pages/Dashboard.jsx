@@ -1,12 +1,21 @@
 import React from "react";
+import { useDispatch } from "react-redux";
+import { createDeal } from "../features/deals/dealSlice";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Sidebar from "../components/Sidebar";
 import DealList from "../components/DealList";
 import OrderList from "../components/OrderList";
 import NotificationList from "../components/NotificationList";
+import DealForm from "../components/DealForm";
 
-const Dashboard = () => {
+const Dashboard = ({ user, deals }) => {
+  const dispatch = useDispatch();
+
+  const handleCreateDeal = (dealData) => {
+    dispatch(createDeal(dealData));
+  };
+
   return (
     <div className="flex">
       <Sidebar />
@@ -17,18 +26,27 @@ const Dashboard = () => {
             Dashboard
           </h2>
 
+          {user?.role === "Organizer" && (
+            <section className="mb-8">
+              <h3 className="text-2xl font-semibold mb-4 text-custom-dark">
+                Create New Deal
+              </h3>
+              <DealForm onCreateDeal={handleCreateDeal} />
+            </section>
+          )}
+
           <section className="mb-8">
             <h3 className="text-2xl font-semibold mb-4 text-custom-dark">
               Active Deals
             </h3>
-            <DealList />
+            <DealList deals={deals} />
           </section>
 
           <section className="mb-8">
             <h3 className="text-2xl font-semibold mb-4 text-custom-dark">
               Recent Orders
             </h3>
-            <OrderList />
+            <OrderList deals={deals} />
           </section>
 
           <section className="mb-8">

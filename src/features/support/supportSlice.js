@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "../../utils/helperMethods";
 
 export const submitSupportRequest = createAsyncThunk(
   "support/submitSupportRequest",
   async (requestData) => {
-    const response = await axios.post("/api/support/requests", requestData);
+    const response = await axiosInstance.post("/support/requests", requestData);
     return response.data;
   }
 );
@@ -12,7 +12,7 @@ export const submitSupportRequest = createAsyncThunk(
 export const fetchSupportRequests = createAsyncThunk(
   "support/fetchSupportRequests",
   async () => {
-    const response = await axios.get("/api/support/requests");
+    const response = await axiosInstance.get("/support/requests");
     return response.data;
   }
 );

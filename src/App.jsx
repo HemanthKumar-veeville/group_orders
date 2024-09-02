@@ -1,5 +1,10 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Deals from "./pages/Deals";
@@ -21,16 +26,48 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Logout from "./pages/Logout";
+import { useSelector, useDispatch } from "react-redux";
+import { setUserDetails } from "./features/auth/authSlice";
+import { fetchDeals } from "./features/deals/dealSlice";
 
 function App() {
+  const [isUserLoggedIn, setIsUserLoggedIn] = React.useState(false);
+  const token = useSelector((state) => state.auth.token);
+  const user = useSelector((state) => state.auth.user);
+  const deals = useSelector((state) => state.deals);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    setIsUserLoggedIn(!!token);
+    dispatch(fetchDeals());
+  }, [token]);
+
+  useEffect(() => {
+    const userToken = localStorage.getItem("authToken");
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!token) {
+      dispatch(setUserDetails({ user, token: userToken }));
+    }
+  }, [token]);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/deals" element={<Deals />} />
+        <Route
+          path="/"
+          element={
+            isUserLoggedIn ? (
+              <Dashboard user={user} deals={deals} />
+            ) : (
+              <Landing />
+            )
+          }
+        />
+        <Route path="/deals" element={<Deals deals={deals} />} />
         <Route path="/deals/:id" element={<DealDetails />} />
-        <Route path="/orders/history" element={<OrderHistory />} />
+        <Route
+          path="/orders/history"
+          element={<OrderHistory deals={deals} />}
+        />
         <Route path="/orders/:id" element={<OrderDetails />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/profile" element={<UserProfile />} />

@@ -8,6 +8,8 @@ const LoginForm = ({ onLogin }) => {
     e.preventDefault();
     // Handle login logic
     onLogin({ email, password });
+    setEmail("");
+    setPassword("");
   };
 
   return (
