@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createOrder } from "../features/orders/orderSlice";
-import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import {
+  CardElement,
+  IbanElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 import axiosInstance from "../utils/helperMethods";
 
 const OrderForm = ({ dealId }) => {
@@ -10,6 +15,7 @@ const OrderForm = ({ dealId }) => {
   const elements = useElements();
   const { user } = useSelector((state) => state.auth);
   const [amount, setAmount] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState("card");
   const [error, setError] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -26,7 +32,6 @@ const OrderForm = ({ dealId }) => {
     }
 
     try {
-      // Step 1: Create SetupIntent on the server
       let clientSecret;
       try {
         const response = await axiosInstance.post(
@@ -48,12 +53,13 @@ const OrderForm = ({ dealId }) => {
         );
       }
 
-      // Step 2: Confirm the SetupIntent on the client
       let setupIntent;
       try {
-        const cardElement = elements.getElement(CardElement);
-        const { setupIntent: intent, error: stripeError } =
-          await stripe.confirmCardSetup(clientSecret, {
+        let paymentMethodData = {};
+
+        if (paymentMethod === "card") {
+          const cardElement = elements.getElement(CardElement);
+          paymentMethodData = {
             payment_method: {
               card: cardElement,
               billing_details: {
@@ -61,17 +67,39 @@ const OrderForm = ({ dealId }) => {
                 email: user.email,
               },
             },
-          });
+          };
 
-        if (stripeError) {
-          throw new Error(stripeError.message);
+          const { setupIntent: intent, error: stripeError } =
+            await stripe.confirmCardSetup(clientSecret, paymentMethodData);
+          if (stripeError) {
+            throw new Error(stripeError.message);
+          }
+          setupIntent = intent;
+        } else if (paymentMethod === "sepa_debit") {
+          const ibanElement = elements.getElement(IbanElement);
+          paymentMethodData = {
+            payment_method: {
+              sepa_debit: ibanElement,
+              billing_details: {
+                name: user.name,
+                email: user.email,
+              },
+            },
+          };
+
+          const { setupIntent: intent, error: stripeError } =
+            await stripe.confirmSepaDebitSetup(clientSecret, paymentMethodData);
+          if (stripeError) {
+            throw new Error(stripeError.message);
+          }
+          setupIntent = intent;
+        } else {
+          throw new Error("Unsupported payment method selected.");
         }
-        setupIntent = intent;
       } catch (err) {
         throw new Error("Failed to confirm SetupIntent: " + err.message);
       }
 
-      // Step 3: Save the Payment Method ID and Create the Order
       try {
         const orderData = {
           amount: parseFloat(amount),
@@ -82,14 +110,12 @@ const OrderForm = ({ dealId }) => {
           userId: user.id,
         };
 
-        // Dispatch the action to create the order
         await dispatch(createOrder(orderData));
 
-        // Reset form or provide feedback
-        console.log("Order placed (payment method saved):", orderData);
         setSuccess(true);
         setAmount(0);
-        elements.getElement(CardElement).clear();
+        elements.getElement(CardElement)?.clear();
+        elements.getElement(IbanElement)?.clear();
       } catch (err) {
         throw new Error("Failed to create order: " + err.message);
       }
@@ -134,31 +160,81 @@ const OrderForm = ({ dealId }) => {
           </div>
           <div className="mb-4">
             <label
-              htmlFor="card-element"
+              htmlFor="payment-method"
               className="block text-sm font-medium text-gray-700"
             >
-              Credit or Debit Card
+              Payment Method
             </label>
-            <div className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-white">
-              <CardElement
-                id="card-element"
-                options={{
-                  style: {
-                    base: {
-                      fontSize: "16px",
-                      color: "#424770",
-                      "::placeholder": {
-                        color: "#aab7c4",
+            <select
+              id="payment-method"
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-custom-accent focus:border-custom-accent"
+            >
+              <option value="card">Credit/Debit Card</option>
+              <option value="sepa_debit">SEPA Debit</option>
+              {/* Add more payment methods here */}
+            </select>
+          </div>
+          {paymentMethod === "card" && (
+            <div className="mb-4">
+              <label
+                htmlFor="card-element"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Card Details
+              </label>
+              <div className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-white">
+                <CardElement
+                  id="card-element"
+                  options={{
+                    style: {
+                      base: {
+                        fontSize: "16px",
+                        color: "#424770",
+                        "::placeholder": {
+                          color: "#aab7c4",
+                        },
+                      },
+                      invalid: {
+                        color: "#9e2146",
                       },
                     },
-                    invalid: {
-                      color: "#9e2146",
-                    },
-                  },
-                }}
-              />
+                  }}
+                />
+              </div>
             </div>
-          </div>
+          )}
+          {paymentMethod === "sepa_debit" && (
+            <div className="mb-4">
+              <label
+                htmlFor="iban-element"
+                className="block text-sm font-medium text-gray-700"
+              >
+                IBAN
+              </label>
+              <div className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-white">
+                <IbanElement
+                  id="iban-element"
+                  options={{
+                    supportedCountries: ["SEPA"],
+                    style: {
+                      base: {
+                        fontSize: "16px",
+                        color: "#424770",
+                        "::placeholder": {
+                          color: "#aab7c4",
+                        },
+                      },
+                      invalid: {
+                        color: "#9e2146",
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          )}
           {error && <div className="text-red-600 mb-4">{error}</div>}
           <button
             type="submit"
