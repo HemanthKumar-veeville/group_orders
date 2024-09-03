@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createOrder } from "../features/orders/orderSlice";
+import { createOrder, fetchAllOrders } from "../features/orders/orderSlice";
 import {
   CardElement,
   IbanElement,
@@ -93,6 +93,24 @@ const OrderForm = ({ dealId }) => {
             throw new Error(stripeError.message);
           }
           setupIntent = intent;
+        } else if (paymentMethod === "cartes_bancaires") {
+          const cardElement = elements.getElement(CardElement);
+          paymentMethodData = {
+            payment_method: {
+              card: cardElement,
+              billing_details: {
+                name: user.name,
+                email: user.email,
+              },
+            },
+          };
+
+          const { setupIntent: intent, error: stripeError } =
+            await stripe.confirmCardSetup(clientSecret, paymentMethodData);
+          if (stripeError) {
+            throw new Error(stripeError.message);
+          }
+          setupIntent = intent;
         } else {
           throw new Error("Unsupported payment method selected.");
         }
@@ -111,6 +129,7 @@ const OrderForm = ({ dealId }) => {
         };
 
         await dispatch(createOrder(orderData));
+        await dispatch(fetchAllOrders()); // Refresh the orders after charging
 
         setSuccess(true);
         setAmount(0);
@@ -173,6 +192,7 @@ const OrderForm = ({ dealId }) => {
             >
               <option value="card">Credit/Debit Card</option>
               <option value="sepa_debit">SEPA Debit</option>
+              <option value="cartes_bancaires">Cartes Bancaires</option>
               {/* Add more payment methods here */}
             </select>
           </div>
@@ -218,6 +238,35 @@ const OrderForm = ({ dealId }) => {
                   id="iban-element"
                   options={{
                     supportedCountries: ["SEPA"],
+                    style: {
+                      base: {
+                        fontSize: "16px",
+                        color: "#424770",
+                        "::placeholder": {
+                          color: "#aab7c4",
+                        },
+                      },
+                      invalid: {
+                        color: "#9e2146",
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          {paymentMethod === "cartes_bancaires" && (
+            <div className="mb-4">
+              <label
+                htmlFor="card-element"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Cartes Bancaires Details
+              </label>
+              <div className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-white">
+                <CardElement
+                  id="card-element"
+                  options={{
                     style: {
                       base: {
                         fontSize: "16px",

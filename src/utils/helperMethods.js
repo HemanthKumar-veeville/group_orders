@@ -2,7 +2,6 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:5000",
-  timeout: 10000, // 10 seconds timeout for requests
   headers: {
     "Content-Type": "application/json",
     Authorization: "Bearer " + localStorage.getItem("authToken"),

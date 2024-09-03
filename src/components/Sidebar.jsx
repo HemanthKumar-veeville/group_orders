@@ -18,7 +18,7 @@ const Sidebar = () => {
             </Link>
           </li>
           <li className="mb-4">
-            <Link to="/orders/history" className="hover:text-custom-accent">
+            <Link to="/orders" className="hover:text-custom-accent">
               Orders
             </Link>
           </li>

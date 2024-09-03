@@ -64,10 +64,7 @@ function App() {
         />
         <Route path="/deals" element={<Deals deals={deals} />} />
         <Route path="/deals/:id" element={<DealDetails />} />
-        <Route
-          path="/orders/history"
-          element={<OrderHistory deals={deals} />}
-        />
+        <Route path="/orders" element={<OrderHistory deals={deals} />} />
         <Route path="/orders/:id" element={<OrderDetails />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/profile" element={<UserProfile />} />

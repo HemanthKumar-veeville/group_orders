@@ -2,11 +2,14 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllOrders, fetchMyOrders } from "../features/orders/orderSlice";
 import axiosInstance from "../utils/helperMethods";
+import { CirclesWithBar } from "react-loader-spinner";
 
 const OrderList = ({ deals }) => {
   const dispatch = useDispatch();
   const { orders, status, error } = useSelector((state) => state.orders);
   const user = useSelector((state) => state.auth.user);
+  const [isPaymentProcessing, setIsPaymentProcessing] = React.useState(false);
+  const [isRefreshProcessing, setIsRefreshProcessing] = React.useState(false);
 
   useEffect(() => {
     if (user?.role === "Organizer") {
@@ -28,12 +31,28 @@ const OrderList = ({ deals }) => {
   };
 
   const handleConfirmAutoDebit = async (dealId) => {
+    setIsPaymentProcessing(true);
     console.log("Triggering auto-debit for deal:", dealId);
     try {
       await axiosInstance.post("/payments/charge-saved-method", { dealId });
       await dispatch(fetchAllOrders()); // Refresh the orders after charging
     } catch (err) {
       console.error("Failed to trigger auto-debit:", err.message);
+    } finally {
+      setIsPaymentProcessing(false);
+    }
+  };
+
+  const handleRefresh = async (dealId) => {
+    setIsRefreshProcessing(true);
+    console.log("Triggering status refresh for deal:", dealId);
+    try {
+      await axiosInstance.post("/payments/update-payment-status", { dealId });
+      await dispatch(fetchAllOrders()); // Refresh the orders after charging
+    } catch (err) {
+      console.error("Failed to status refresh:", err.message);
+    } finally {
+      setIsRefreshProcessing(false);
     }
   };
 
@@ -47,8 +66,17 @@ const OrderList = ({ deals }) => {
     return <div className="text-red-600">Error: {error}</div>;
   }
 
+  if (isPaymentProcessing || isRefreshProcessing) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <CirclesWithBar color="#f97316" height={80} width={80} />
+      </div>
+    );
+  }
   return (
-    orders?.length && (
+    orders?.length > 0 &&
+    !isPaymentProcessing &&
+    !isRefreshProcessing && (
       <div className="bg-custom-light shadow-md rounded-lg p-6">
         {Object.keys(groupedOrders).length === 0 ? (
           <div className="text-custom-dark">No orders found</div>
@@ -62,8 +90,20 @@ const OrderList = ({ deals }) => {
                 {user?.role === "Organizer" && (
                   <button
                     onClick={() =>
+                      handleRefresh(groupedOrders[dealName][0]?.dealId)
+                    }
+                    className=" bg-custom-accent text-white py-1 px-4 rounded-lg shadow-md hover:bg-custom-accent-dark"
+                    disabled={isRefreshProcessing}
+                  >
+                    Refresh
+                  </button>
+                )}
+                {user?.role === "Organizer" && (
+                  <button
+                    onClick={() =>
                       handleConfirmAutoDebit(groupedOrders[dealName][0]?.dealId)
                     }
+                    disabled={isPaymentProcessing}
                     className=" bg-custom-accent text-white py-1 px-4 rounded-lg shadow-md hover:bg-custom-accent-dark"
                   >
                     Confirm
@@ -76,6 +116,7 @@ const OrderList = ({ deals }) => {
                     <span className="w-1/4 text-left">User Name</span>
                     <span className="w-1/4 text-left">Deal Name</span>
                     <span className="w-1/4 text-left">Amount</span>
+                    <span className="w-1/4 text-left">Order Status</span>
                     <span className="w-1/4 text-right">Paid Status</span>
                   </div>
                 </li>
@@ -91,10 +132,29 @@ const OrderList = ({ deals }) => {
                       <span className="w-1/4 text-left font-semibold text-custom-dark">
                         {order?.Deal?.name}
                       </span>
-                      <span className="w-1/4 text-left text-custom-accent">
+                      <span
+                        className={`w-1/4 text-left ${
+                          order?.isPaid
+                            ? "text-green-600"
+                            : "text-custom-accent"
+                        }`}
+                      >
                         ${order?.amount?.toFixed(2)}
                       </span>
-                      <span className="w-1/4 text-right text-sm text-gray-600">
+                      <span
+                        className={`w-1/4 text-left ${
+                          order?.isPaid
+                            ? "text-green-600"
+                            : "text-custom-accent"
+                        }`}
+                      >
+                        {order?.paymentIntent?.status}
+                      </span>
+                      <span
+                        className={`w-1/4 text-right ${
+                          order?.isPaid ? "text-green-600" : "text-gray-600"
+                        }`}
+                      >
                         {order?.isPaid ? "Paid" : "Unpaid"}
                       </span>
                     </div>
