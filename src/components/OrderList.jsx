@@ -28,6 +28,7 @@ const OrderList = ({ deals }) => {
   };
 
   const handleConfirmAutoDebit = async (dealId) => {
+    console.log("Triggering auto-debit for deal:", dealId);
     try {
       await axiosInstance.post("/payments/charge-saved-method", { dealId });
       await dispatch(fetchAllOrders()); // Refresh the orders after charging
@@ -61,7 +62,7 @@ const OrderList = ({ deals }) => {
                 {user?.role === "Organizer" && (
                   <button
                     onClick={() =>
-                      handleConfirmAutoDebit(groupedOrders[dealName][0]?.id)
+                      handleConfirmAutoDebit(groupedOrders[dealName][0]?.dealId)
                     }
                     className=" bg-custom-accent text-white py-1 px-4 rounded-lg shadow-md hover:bg-custom-accent-dark"
                   >

@@ -14,12 +14,12 @@ const SignUpCallToAction = () => {
           Experience the easiest way to manage group orders. Sign up now and
           start organizing!
         </p>
-        <div
+        <span
           onClick={handleSignUp}
           className="bg-white text-custom-accent px-8 py-3 rounded-full shadow-md hover:bg-gray-100 transition duration-300"
         >
           Sign Up Now
-        </div>
+        </span>
       </div>
     </section>
   );

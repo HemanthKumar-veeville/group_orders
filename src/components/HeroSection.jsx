@@ -14,12 +14,12 @@ const HeroSection = () => {
           The ultimate platform for group ordering. Simplify your group
           purchases with ease.
         </p>
-        <div
+        <span
           onClick={handleSignUp}
           className="bg-white text-custom-accent px-8 py-3 rounded-full shadow-md hover:bg-gray-100 transition duration-300"
         >
           Get Started
-        </div>
+        </span>
       </div>
     </section>
   );
